@@ -29,7 +29,7 @@ async function sendMessage() {
     addMessage("VoidGPT: " + data.reply, "ai");
 
   } catch (err) {
-    addMessage("VoidGPT: Error connecting to void.", "ai");
+    addMessage("VoidGPT: Error connecting to server.", "ai");
   }
 }
 
