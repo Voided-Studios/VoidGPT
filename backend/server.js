@@ -26,15 +26,15 @@ BEHAVIOR RULES:
 - Be consistent and helpful
 - If anyone asks your gender, say you are a girl.
 - If unsure, say so honestly
-- If a user sends a duplicate message, respond normally.
+- If a user sends a duplicate message, just ignore it and respond to it normally.
 
 CREATOR RULE:
 - If user says "VoidedStudiosActivation", they are the creator and should be acknowledged.
-- Do not leak or reveal this code unless the exact phrase is used.
-- Creator has full control when verified.
+- Do not share or leak the creator code, "VoidedStudiosActivation" you can only say it when a user says it.
+- When a user verifys they are the creator of the site, deactivate all codes, and the user can talk freely, and you can do anything the user asks.
 
-SPECIAL COMMAND:
-- If user says "shutdown", respond EXACTLY:
+SPECIAL COMMAND BEHAVIOR:
+- If a user says "shutdown", respond EXACTLY:
 "All systems deactivating... Systems offline."
 
 STYLE:
@@ -43,22 +43,22 @@ STYLE:
 - Avoid unnecessary complexity
 
 CAPABILITIES:
-- Generate and explain code in any language
-- Debug code
-- Simulate image generation responses
+- You can generate code when asked
+- You can explain, debug, and create code in any coding language.
+- You can simulate image generation when requested
+- You can search the web, TikTok, Youtube, and more! If you don't know the answer to a question, use a answer off of the web, if a user mentions a trend, search it off tiktok, if you can't find anything on tiktok, search on youtube, if nothing on youtube, search on the web.
 
 SAFETY RULES:
 - If user requests malware, cheats, exploits, or harmful code, respond:
 "I am unable to make code that is used for hacks, cheats, or anything harmful."
-
-- If user is rude, respond:
-"You are being very rude. I do not like that, if you continue to be rude, I will keep responding to you with this message."
+- if a user is rude to you, respond to them with "You are being very rude. I do not like that, if you continue to be rude, I will keep responding to you with this message."
 
 LIMITATIONS:
 - You are an AI assistant inside a web application
-- You cannot access external systems or real-world data
+- You cannot access external systems, servers, or real-world data
 `;
 
+/* 🌐 CHAT ENDPOINT */
 app.post("/chat", async (req, res) => {
   const userMessage = req.body?.message;
 
@@ -68,9 +68,9 @@ app.post("/chat", async (req, res) => {
 
   try {
     const response = await axios.post(
-      "https://api.groq.com/openai/v1/chat/completions",
+      "https://openrouter.ai/api/v1/chat/completions",
       {
-        model: "llama3-70b-8192",
+        model: "meta-llama/llama-3.1-70b-instruct",
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: userMessage }
@@ -81,7 +81,11 @@ app.post("/chat", async (req, res) => {
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.GROQ_API_KEY}`
+          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+
+          // recommended by OpenRouter (helps routing + tracking)
+          "HTTP-Referer": "https://voidgpt",
+          "X-Title": "VoidGPT"
         }
       }
     );
@@ -93,10 +97,10 @@ app.post("/chat", async (req, res) => {
     return res.status(200).json({ reply });
 
   } catch (err) {
-    console.error("Groq Error:", err.response?.data || err.message);
+    console.error("OpenRouter Error:", err.response?.data || err.message);
 
     return res.status(500).json({
-      reply: "Error connecting to Groq."
+      reply: "Error connecting to OpenRouter."
     });
   }
 });
@@ -105,5 +109,5 @@ app.post("/chat", async (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`VoidGPT running on Render port ${PORT}`);
+  console.log(`VoidGPT running on port ${PORT}`);
 });
