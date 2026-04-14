@@ -1,8 +1,8 @@
 const chat = document.getElementById("chat");
 const input = document.getElementById("input");
 
-/* 🔗 YOUR RENDER BACKEND URL */
-const API_URL = "https://YOUR-RENDER-URL.onrender.com/chat";
+/* 🌐 YOUR RENDER BACKEND */
+const API_URL = "https://voidgpt-6fcj.onrender.com/chat";
 
 /* 💬 Add message to chat */
 function addMessage(text, type) {
@@ -29,14 +29,16 @@ function hideTyping() {
   if (t) t.remove();
 }
 
-/* 🚀 Send message */
+/* 🚀 Send message to backend */
 async function sendMessage() {
   const msg = input.value.trim();
   if (!msg) return;
 
+  // show user message
   addMessage("You: " + msg, "user");
   input.value = "";
 
+  // show loading
   showTyping();
 
   try {
@@ -60,7 +62,9 @@ async function sendMessage() {
   }
 }
 
-/* ⌨️ Enter key support */
+/* ⌨️ Press Enter to send */
 input.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") sendMessage();
+  if (e.key === "Enter") {
+    sendMessage();
+  }
 });
