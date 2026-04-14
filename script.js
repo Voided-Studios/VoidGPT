@@ -1,21 +1,23 @@
-// 🌑 VoidGPT Frontend Script (Voided Studios)
+// 🌑 VoidGPT Frontend (Voided Studios)
 
 const chat = document.getElementById("chat");
 const input = document.getElementById("input");
 
-/* 🧠 Add message to chat UI */
+/* 🧠 CONFIG — PUT YOUR RAILWAY URL HERE */
+const API_URL = "https://YOUR-RAILWAY-URL/chat";
+
+/* 💬 Add message to chat */
 function addMessage(text, type) {
   const msg = document.createElement("div");
   msg.className = `message ${type}`;
   msg.innerText = text;
-  chat.appendChild(msg);
 
-  // auto scroll to bottom
+  chat.appendChild(msg);
   chat.scrollTop = chat.scrollHeight;
 }
 
-/* ✨ Typing effect (simple version) */
-function addTypingIndicator() {
+/* ⏳ Typing indicator */
+function showTyping() {
   const typing = document.createElement("div");
   typing.className = "message ai";
   typing.id = "typing";
@@ -24,7 +26,7 @@ function addTypingIndicator() {
   chat.scrollTop = chat.scrollHeight;
 }
 
-function removeTypingIndicator() {
+function hideTyping() {
   const typing = document.getElementById("typing");
   if (typing) typing.remove();
 }
@@ -38,11 +40,11 @@ async function sendMessage() {
   addMessage("You: " + message, "user");
   input.value = "";
 
-  // typing indicator
-  addTypingIndicator();
+  // show loading
+  showTyping();
 
   try {
-    const res = await fetch("https://YOUR-RAILWAY-URL/chat", {
+    const res = await fetch(API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -50,15 +52,21 @@ async function sendMessage() {
       body: JSON.stringify({ message })
     });
 
+    // if server error
+    if (!res.ok) {
+      throw new Error("Server error");
+    }
+
     const data = await res.json();
 
-    removeTypingIndicator();
+    hideTyping();
 
-    // show AI response
-    addMessage("VoidGPT: " + data.reply, "ai");
+    addMessage("VoidGPT: " + (data.reply || "Void is silent..."), "ai");
 
   } catch (err) {
-    removeTypingIndicator();
+    hideTyping();
+
+    console.error(err);
     addMessage("VoidGPT: Error connecting to the void.", "ai");
   }
 }
