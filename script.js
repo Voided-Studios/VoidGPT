@@ -3,8 +3,8 @@
 const chat = document.getElementById("chat");
 const input = document.getElementById("input");
 
-/* 🧠 CONFIG — PUT YOUR RAILWAY URL HERE */
-const API_URL = "https://YOUR-RAILWAY-URL/chat";
+// 🚀 Vercel serverless API route
+const API_URL = "/api/chat";
 
 /* 💬 Add message to chat */
 function addMessage(text, type) {
@@ -52,7 +52,6 @@ async function sendMessage() {
       body: JSON.stringify({ message })
     });
 
-    // if server error
     if (!res.ok) {
       throw new Error("Server error");
     }
@@ -61,17 +60,23 @@ async function sendMessage() {
 
     hideTyping();
 
-    addMessage("VoidGPT: " + (data.reply || "Void is silent..."), "ai");
+    addMessage(
+      "VoidGPT: " + (data.reply || "Void is silent..."),
+      "ai"
+    );
 
   } catch (err) {
     hideTyping();
 
     console.error(err);
-    addMessage("VoidGPT: Error connecting to the void.", "ai");
+    addMessage(
+      "VoidGPT: Error connecting to the void.",
+      "ai"
+    );
   }
 }
 
-/* ⌨️ Press Enter to send */
+/* ⌨️ Enter key support */
 input.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
     sendMessage();
