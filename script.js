@@ -18,6 +18,12 @@ async function sendMessage() {
   addMessage("You: " + msg, "user");
   input.value = "";
 
+  const typing = document.createElement("div");
+  typing.className = "msg ai";
+  typing.innerText = "VoidGPT is typing...";
+  chat.appendChild(typing);
+  chat.scrollTop = chat.scrollHeight;
+
   try {
     const res = await fetch(API_URL, {
       method: "POST",
@@ -26,9 +32,12 @@ async function sendMessage() {
     });
 
     const data = await res.json();
+
+    typing.remove();
     addMessage("VoidGPT: " + data.reply, "ai");
 
   } catch (err) {
+    typing.remove();
     addMessage("VoidGPT: Error connecting to server.", "ai");
   }
 }
