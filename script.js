@@ -1,84 +1,56 @@
-// 🌑 VoidGPT Frontend (Voided Studios)
-
 const chat = document.getElementById("chat");
 const input = document.getElementById("input");
 
-// 🚀 Vercel serverless API route
 const API_URL = "/api/chat";
 
-/* 💬 Add message to chat */
 function addMessage(text, type) {
-  const msg = document.createElement("div");
-  msg.className = `message ${type}`;
-  msg.innerText = text;
-
-  chat.appendChild(msg);
+  const div = document.createElement("div");
+  div.className = `message ${type}`;
+  div.innerText = text;
+  chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
 }
 
-/* ⏳ Typing indicator */
 function showTyping() {
-  const typing = document.createElement("div");
-  typing.className = "message ai";
-  typing.id = "typing";
-  typing.innerText = "VoidGPT is thinking...";
-  chat.appendChild(typing);
-  chat.scrollTop = chat.scrollHeight;
+  const div = document.createElement("div");
+  div.className = "message ai";
+  div.id = "typing";
+  div.innerText = "VoidGPT is thinking...";
+  chat.appendChild(div);
 }
 
 function hideTyping() {
-  const typing = document.getElementById("typing");
-  if (typing) typing.remove();
+  const t = document.getElementById("typing");
+  if (t) t.remove();
 }
 
-/* 🚀 Send message to backend */
 async function sendMessage() {
-  const message = input.value.trim();
-  if (!message) return;
+  const msg = input.value.trim();
+  if (!msg) return;
 
-  // show user message
-  addMessage("You: " + message, "user");
+  addMessage("You: " + msg, "user");
   input.value = "";
 
-  // show loading
   showTyping();
 
   try {
     const res = await fetch(API_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ message })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: msg })
     });
-
-    if (!res.ok) {
-      throw new Error("Server error");
-    }
 
     const data = await res.json();
 
     hideTyping();
 
-    addMessage(
-      "VoidGPT: " + (data.reply || "Void is silent..."),
-      "ai"
-    );
-
+    addMessage("VoidGPT: " + data.reply, "ai");
   } catch (err) {
     hideTyping();
-
-    console.error(err);
-    addMessage(
-      "VoidGPT: Error connecting to the void.",
-      "ai"
-    );
+    addMessage("VoidGPT: Error connecting to the void.", "ai");
   }
 }
 
-/* ⌨️ Enter key support */
 input.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    sendMessage();
-  }
+  if (e.key === "Enter") sendMessage();
 });
