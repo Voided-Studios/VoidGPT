@@ -1,95 +1,39 @@
-const chat = document.getElementById("chat");
-const input = document.getElementById("input");
-const chatList = document.getElementById("chatList");
-
 const API_URL = "https://voidgpt-6fcj.onrender.com/chat";
 
-let chats = JSON.parse(localStorage.getItem("void_chats")) || [];
-let currentChat = null;
+/* 🖥 DESKTOP */
+const chat = document.getElementById("chat");
+const input = document.getElementById("input");
 
-/* 💾 SAVE */
-function save() {
-  localStorage.setItem("void_chats", JSON.stringify(chats));
-}
+/* 📱 MOBILE */
+const chatMobile = document.getElementById("chatMobile");
+const inputMobile = document.getElementById("inputMobile");
 
-/* ➕ NEW CHAT */
-function newChat() {
-  const chatObj = {
-    id: Date.now(),
-    title: "New Chat",
-    messages: []
-  };
+let messages = [];
 
-  chats.push(chatObj);
-  currentChat = chatObj;
-  save();
-  renderChats();
-  renderMessages();
-}
-
-/* 📜 RENDER CHAT LIST */
-function renderChats() {
-  chatList.innerHTML = "";
-
-  chats.forEach(c => {
-    const div = document.createElement("div");
-    div.className = "chatItem";
-    div.innerText = c.title;
-
-    div.onclick = () => {
-      currentChat = c;
-      renderMessages();
-    };
-
-    chatList.appendChild(div);
-  });
-}
-
-/* 💬 RENDER MESSAGES */
-function renderMessages() {
-  chat.innerHTML = "";
-  if (!currentChat) return;
-
-  currentChat.messages.forEach(m => {
-    const div = document.createElement("div");
-    div.className = "msg " + m.role;
-    div.innerText = m.content;
-    chat.appendChild(div);
-  });
+/* 🔊 SPEAK */
+function speak(text) {
+  const u = new SpeechSynthesisUtterance(text);
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
 }
 
 /* 💬 ADD MESSAGE */
-function addMessage(role, content) {
+function addMessage(role, text, target) {
   const div = document.createElement("div");
   div.className = "msg " + role;
-  div.innerText = content;
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
+  div.innerText = text;
+  target.appendChild(div);
+  target.scrollTop = target.scrollHeight;
 
-  currentChat.messages.push({ role, content });
-
-  if (currentChat.messages.length === 1) {
-    currentChat.title = content.slice(0, 20);
-  }
-
-  save();
+  messages.push({ role, content: text });
 }
 
-/* 🔊 TEXT TO SPEECH */
-function speak(text) {
-  const utterance = new SpeechSynthesisUtterance(text);
-  speechSynthesis.cancel();
-  speechSynthesis.speak(utterance);
-}
-
-/* 🚀 SEND MESSAGE */
+/* 🚀 DESKTOP SEND */
 async function sendMessage() {
   const msg = input.value.trim();
   if (!msg) return;
 
-  if (!currentChat) newChat();
-
-  addMessage("user", msg);
+  addMessage("user", msg, chat);
   input.value = "";
 
   const typing = document.createElement("div");
@@ -97,27 +41,43 @@ async function sendMessage() {
   typing.innerText = "VoidGPT is typing...";
   chat.appendChild(typing);
 
-  try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message: msg,
-        history: currentChat.messages
-      })
-    });
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: msg, history: messages })
+  });
 
-    const data = await res.json();
+  const data = await res.json();
 
-    typing.remove();
-    addMessage("ai", data.reply);
+  typing.remove();
+  addMessage("ai", data.reply, chat);
+  speak(data.reply);
+}
 
-    speak(data.reply);
+/* 🚀 MOBILE SEND */
+async function sendMessageMobile() {
+  const msg = inputMobile.value.trim();
+  if (!msg) return;
 
-  } catch (err) {
-    typing.remove();
-    addMessage("ai", "Error connecting to server.");
-  }
+  addMessage("user", msg, chatMobile);
+  inputMobile.value = "";
+
+  const typing = document.createElement("div");
+  typing.className = "msg ai";
+  typing.innerText = "VoidGPT is typing...";
+  chatMobile.appendChild(typing);
+
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: msg, history: messages })
+  });
+
+  const data = await res.json();
+
+  typing.remove();
+  addMessage("ai", data.reply, chatMobile);
+  speak(data.reply);
 }
 
 /* 🎤 VOICE INPUT */
@@ -125,10 +85,7 @@ function startVC() {
   const SpeechRecognition =
     window.SpeechRecognition || window.webkitSpeechRecognition;
 
-  if (!SpeechRecognition) {
-    alert("Voice not supported.");
-    return;
-  }
+  if (!SpeechRecognition) return alert("Voice not supported");
 
   const rec = new SpeechRecognition();
   rec.lang = "en-US";
@@ -136,11 +93,14 @@ function startVC() {
   rec.start();
 
   rec.onresult = (e) => {
-    input.value = e.results[0][0].transcript;
-    sendMessage();
+    const text = e.results[0][0].transcript;
+
+    if (window.innerWidth <= 768) {
+      inputMobile.value = text;
+      sendMessageMobile();
+    } else {
+      input.value = text;
+      sendMessage();
+    }
   };
 }
-
-/* INIT */
-newChat();
-renderChats();
