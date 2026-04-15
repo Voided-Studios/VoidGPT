@@ -10,7 +10,6 @@
 
 <!-- 🖥 DESKTOP -->
 <div id="desktopApp" class="app">
-
   <div class="sidebar"></div>
 
   <div class="main">
@@ -19,23 +18,20 @@
     <div class="inputBar">
       <input id="input" placeholder="Message VoidGPT..." />
       <button onclick="sendMessage()">➤</button>
-      <button onclick="startVC()">🎤</button>
+      <button onmousedown="startHoldVC()" onmouseup="stopHoldVC()">🎤</button>
     </div>
   </div>
-
 </div>
 
 <!-- 📱 MOBILE -->
 <div id="mobileApp" class="mobileApp">
-
   <div id="chatMobile" class="chat"></div>
 
   <div class="inputBar">
     <input id="inputMobile" placeholder="Ask VoidGPT..." />
-    <button onclick="startVC()">🎤</button>
+    <button ontouchstart="startHoldVC()" ontouchend="stopHoldVC()">🎤</button>
     <button onclick="sendMessageMobile()">➤</button>
   </div>
-
 </div>
 
 <script src="script.js"></script>
@@ -43,11 +39,9 @@
 <script>
 function checkDevice() {
   const mobile = window.innerWidth <= 768;
-
   document.getElementById("desktopApp").style.display = mobile ? "none" : "flex";
   document.getElementById("mobileApp").style.display = mobile ? "flex" : "none";
 }
-
 window.addEventListener("load", checkDevice);
 window.addEventListener("resize", checkDevice);
 </script>
