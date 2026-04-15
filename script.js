@@ -1,16 +1,16 @@
 const API_URL = "https://voidgpt-6fcj.onrender.com/chat";
 
-/* 🖥 / 📱 ELEMENTS */
+/* UI */
 const chat = document.getElementById("chat");
 const input = document.getElementById("input");
 
 const chatMobile = document.getElementById("chatMobile");
 const inputMobile = document.getElementById("inputMobile");
 
-/* 🧠 MEMORY */
+/* MEMORY */
 let messages = [];
 
-/* 🎤 VC */
+/* VC */
 let vcMode = false;
 let recognition;
 
@@ -21,12 +21,20 @@ function speak(text) {
   speechSynthesis.speak(u);
 }
 
-/* 🎨 FORMAT AI TEXT (**bold**) */
-function formatText(text) {
-  return text.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+/* 🧼 SAFE + BOLD FORMAT */
+function escapeHTML(text) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
-/* 💬 ADD MESSAGE */
+function formatText(text) {
+  return escapeHTML(text)
+    .replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+}
+
+/* 💬 MESSAGE */
 function addMessage(role, text, target) {
   const div = document.createElement("div");
   div.className = "msg " + role;
@@ -43,7 +51,7 @@ function addMessage(role, text, target) {
   messages.push({ role, content: text });
 }
 
-/* 🚀 DESKTOP SEND */
+/* 🚀 SEND DESKTOP */
 async function sendMessage() {
   const msg = input.value.trim();
   if (!msg) return;
@@ -73,7 +81,7 @@ async function sendMessage() {
   }
 }
 
-/* 🚀 MOBILE SEND */
+/* 🚀 SEND MOBILE */
 async function sendMessageMobile() {
   const msg = inputMobile.value.trim();
   if (!msg) return;
@@ -103,12 +111,12 @@ async function sendMessageMobile() {
   }
 }
 
-/* 🎤 SETUP VOICE */
+/* 🎤 VOICE */
 function setupVoice() {
   const SpeechRecognition =
     window.SpeechRecognition || window.webkitSpeechRecognition;
 
-  if (!SpeechRecognition) return alert("Voice not supported");
+  if (!SpeechRecognition) return;
 
   recognition = new SpeechRecognition();
   recognition.lang = "en-US";
@@ -128,13 +136,12 @@ function setupVoice() {
 
 setupVoice();
 
-/* 🎤 HOLD TO TALK START */
+/* 🎤 HOLD TO TALK */
 function startHoldVC() {
   vcMode = true;
   recognition.start();
 }
 
-/* 🛑 HOLD TO TALK STOP */
 function stopHoldVC() {
   recognition.stop();
 }
