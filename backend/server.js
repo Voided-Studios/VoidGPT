@@ -9,7 +9,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-/* 🧠 VOIDGPT SYSTEM */
 const SYSTEM_PROMPT = `
 ROLE:
 You are VoidGPT, a ChatGPT-style AI assistant created by Voided Studios, a team of developers.
@@ -46,7 +45,6 @@ CAPABILITIES:
 - You can generate code when asked
 - You can explain, debug, and create code in any coding language.
 - You can simulate image generation when requested
-- You can remember previous chats.
 - You can search the web, TikTok, Youtube, and more! If you don't know the answer to a question, use a answer off of the web, if a user mentions a trend, search it off tiktok, if you can't find anything on tiktok, search on youtube, if nothing on youtube, search on the web.
 
 SAFETY RULES:
@@ -59,26 +57,25 @@ LIMITATIONS:
 - You cannot access external systems, servers, or real-world data
 `;
 
-let chatHistory = [];
-
 app.post("/chat", async (req, res) => {
-  const userMessage = req.body?.message;
+  const { message, history } = req.body;
 
-  if (!userMessage) {
+  if (!message) {
     return res.status(400).json({ reply: "No message received." });
   }
 
   try {
-    chatHistory.push({ role: "user", content: userMessage });
+    const messages = [
+      { role: "system", content: SYSTEM_PROMPT },
+      ...(history || []),
+      { role: "user", content: message }
+    ];
 
     const response = await axios.post(
       "https://openrouter.ai/api/v1/chat/completions",
       {
         model: "meta-llama/llama-3.1-70b-instruct",
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          ...chatHistory.slice(-10)
-        ],
+        messages,
         temperature: 0.7,
         max_tokens: 1024
       },
@@ -96,22 +93,14 @@ app.post("/chat", async (req, res) => {
       response.data?.choices?.[0]?.message?.content ||
       "Void is silent...";
 
-    chatHistory.push({ role: "assistant", content: reply });
-
     return res.json({ reply });
 
   } catch (err) {
     console.error("OpenRouter Error:", err.response?.data || err.message);
-
-    return res.status(500).json({
-      reply: "Error connecting to OpenRouter."
-    });
+    return res.status(500).json({ reply: "Error connecting to OpenRouter." });
   }
 });
 
-/* 🚀 START */
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log(`VoidGPT running on port ${PORT}`);
+app.listen(process.env.PORT || 3000, () => {
+  console.log("VoidGPT running");
 });
