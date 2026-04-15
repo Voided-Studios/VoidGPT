@@ -7,17 +7,15 @@ const API_URL = "https://voidgpt-6fcj.onrender.com/chat";
 let chats = JSON.parse(localStorage.getItem("void_chats")) || [];
 let currentChat = null;
 
-/* 💬 SAVE SYSTEM */
+/* 💾 SAVE */
 function save() {
   localStorage.setItem("void_chats", JSON.stringify(chats));
 }
 
 /* ➕ NEW CHAT */
 function newChat() {
-  const id = Date.now();
-
   const chatObj = {
-    id,
+    id: Date.now(),
     title: "New Chat",
     messages: []
   };
@@ -29,7 +27,7 @@ function newChat() {
   renderMessages();
 }
 
-/* 📜 LOAD CHAT LIST */
+/* 📜 RENDER CHAT LIST */
 function renderChats() {
   chatList.innerHTML = "";
 
@@ -47,10 +45,9 @@ function renderChats() {
   });
 }
 
-/* 💬 LOAD MESSAGES */
+/* 💬 RENDER MESSAGES */
 function renderMessages() {
   chat.innerHTML = "";
-
   if (!currentChat) return;
 
   currentChat.messages.forEach(m => {
@@ -76,6 +73,13 @@ function addMessage(role, content) {
   }
 
   save();
+}
+
+/* 🔊 TEXT TO SPEECH */
+function speak(text) {
+  const utterance = new SpeechSynthesisUtterance(text);
+  speechSynthesis.cancel();
+  speechSynthesis.speak(utterance);
 }
 
 /* 🚀 SEND MESSAGE */
@@ -108,13 +112,15 @@ async function sendMessage() {
     typing.remove();
     addMessage("ai", data.reply);
 
+    speak(data.reply);
+
   } catch (err) {
     typing.remove();
     addMessage("ai", "Error connecting to server.");
   }
 }
 
-/* 🎤 VOICE MODE */
+/* 🎤 VOICE INPUT */
 function startVC() {
   const SpeechRecognition =
     window.SpeechRecognition || window.webkitSpeechRecognition;
