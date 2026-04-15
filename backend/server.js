@@ -65,17 +65,15 @@ app.post("/chat", async (req, res) => {
   }
 
   try {
-    const messages = [
-      { role: "system", content: SYSTEM_PROMPT },
-      ...(history || []),
-      { role: "user", content: message }
-    ];
-
     const response = await axios.post(
       "https://openrouter.ai/api/v1/chat/completions",
       {
         model: "meta-llama/llama-3.1-70b-instruct",
-        messages,
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          ...(history || []),
+          { role: "user", content: message }
+        ],
         temperature: 0.7,
         max_tokens: 1024
       },
@@ -97,10 +95,15 @@ app.post("/chat", async (req, res) => {
 
   } catch (err) {
     console.error("OpenRouter Error:", err.response?.data || err.message);
-    return res.status(500).json({ reply: "Error connecting to OpenRouter." });
+
+    return res.status(500).json({
+      reply: "Error connecting to OpenRouter."
+    });
   }
 });
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log("VoidGPT running");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log("VoidGPT v2 running on port", PORT);
 });
