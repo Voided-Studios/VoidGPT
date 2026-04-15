@@ -94,7 +94,7 @@ app.post("/chat", async (req, res) => {
 
   } catch (err) {
     console.error(err.response?.data || err.message);
-    return res.status(500).json({ reply: "Error connecting to OpenRouter." });
+    return res.status(500).json({ reply: "Error connecting to VoidedAPIs." });
   }
 });
 
