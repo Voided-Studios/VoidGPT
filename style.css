@@ -5,7 +5,6 @@ body {
   color: white;
 }
 
-/* 🖥 DESKTOP */
 .app {
   display: flex;
   height: 100vh;
@@ -22,14 +21,12 @@ body {
   flex-direction: column;
 }
 
-/* 📱 MOBILE */
 .mobileApp {
   display: none;
   flex-direction: column;
   height: 100vh;
 }
 
-/* 💬 CHAT */
 .chat {
   flex: 1;
   padding: 10px;
@@ -50,7 +47,6 @@ body {
   color: white;
 }
 
-/* ⌨ INPUT */
 .inputBar {
   display: flex;
   padding: 10px;
