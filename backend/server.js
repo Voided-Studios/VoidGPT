@@ -87,23 +87,15 @@ app.post("/chat", async (req, res) => {
       }
     );
 
-    const reply =
-      response.data?.choices?.[0]?.message?.content ||
-      "Void is silent...";
+    const reply = response.data?.choices?.[0]?.message?.content || "Void is silent...";
 
     return res.json({ reply });
 
   } catch (err) {
-    console.error("OpenRouter Error:", err.response?.data || err.message);
-
-    return res.status(500).json({
-      reply: "Error connecting to OpenRouter."
-    });
+    console.error(err.response?.data || err.message);
+    return res.status(500).json({ reply: "Error connecting to OpenRouter." });
   }
 });
 
 const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log("VoidGPT v2 running on port", PORT);
-});
+app.listen(PORT, () => console.log("VoidGPT running"));
