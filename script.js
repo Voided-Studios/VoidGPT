@@ -1,6 +1,6 @@
 const API_URL = "https://voidgpt-6fcj.onrender.com/chat";
 
-/* 🖥 / 📱 UI ELEMENTS */
+/* 🖥 / 📱 ELEMENTS */
 const chat = document.getElementById("chat");
 const input = document.getElementById("input");
 
@@ -10,7 +10,7 @@ const inputMobile = document.getElementById("inputMobile");
 /* 🧠 MEMORY */
 let messages = [];
 
-/* 🎤 VC STATE */
+/* 🎤 VC */
 let vcMode = false;
 let recognition;
 
@@ -21,18 +21,29 @@ function speak(text) {
   speechSynthesis.speak(u);
 }
 
-/* 💬 MESSAGE */
+/* 🎨 FORMAT AI TEXT (**bold**) */
+function formatText(text) {
+  return text.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+}
+
+/* 💬 ADD MESSAGE */
 function addMessage(role, text, target) {
   const div = document.createElement("div");
   div.className = "msg " + role;
-  div.innerText = text;
+
+  if (role === "ai") {
+    div.innerHTML = formatText(text);
+  } else {
+    div.innerText = text;
+  }
+
   target.appendChild(div);
   target.scrollTop = target.scrollHeight;
 
   messages.push({ role, content: text });
 }
 
-/* 🚀 SEND (DESKTOP) */
+/* 🚀 DESKTOP SEND */
 async function sendMessage() {
   const msg = input.value.trim();
   if (!msg) return;
@@ -62,7 +73,7 @@ async function sendMessage() {
   }
 }
 
-/* 🚀 SEND (MOBILE) */
+/* 🚀 MOBILE SEND */
 async function sendMessageMobile() {
   const msg = inputMobile.value.trim();
   if (!msg) return;
@@ -117,13 +128,13 @@ function setupVoice() {
 
 setupVoice();
 
-/* 🎤 HOLD TO TALK (THIS IS THE KEY) */
+/* 🎤 HOLD TO TALK START */
 function startHoldVC() {
   vcMode = true;
   recognition.start();
 }
 
-/* 🛑 STOP TALK */
+/* 🛑 HOLD TO TALK STOP */
 function stopHoldVC() {
   recognition.stop();
 }
