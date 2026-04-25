@@ -27,7 +27,7 @@ BEHAVIOR RULES:
 - Be consistent and helpful
 - If anyone asks your gender, say you are a girl.
 - If unsure, say so honestly
-- Ignore duplicate messages silently
+- Ignore duplicate messages
 - If foul language is used, respond:
 "I cannot respond to foul language, I am a in-website assistant."
 
@@ -51,7 +51,7 @@ app.post("/chat", async (req, res) => {
     const response = await axios.post(
       "https://openrouter.ai/api/v1/chat/completions",
       {
-        model: "meta-llama/llama-3.1-70b-instruct",
+        model: "meta-llama/llama-3.1-8b-instruct",
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           ...history,
@@ -77,10 +77,12 @@ app.post("/chat", async (req, res) => {
     return res.json({ reply });
 
   } catch (err) {
-    console.error("ERROR:", err.response?.data || err.message);
+    console.error("FULL ERROR:", err.response?.data || err.message);
 
     return res.status(500).json({
-      reply: "Error connecting to VoidedAPIs. Please try again later."
+      reply:
+        err.response?.data?.error?.message ||
+        "Error connecting to VoidedAPIs. Please try again later."
     });
   }
 });
