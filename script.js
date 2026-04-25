@@ -5,7 +5,7 @@
 const API_URL = "https://voidgpt-6fcj.onrender.com/chat";
 
 // =========================
-// 🔥 FIREBASE IMPORTS
+// 🔥 FIREBASE IMPORTS (MODULE STYLE)
 // =========================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
@@ -21,7 +21,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // =========================
-// 🔥 FIREBASE CONFIG (YOUR DATA)
+// 🔥 FIREBASE CONFIG
 // =========================
 const firebaseConfig = {
   apiKey: "AIzaSyBPZETffcGFXRIWOHRTuhperRnFzXFJhXs",
@@ -61,7 +61,7 @@ let vcMode = false;
 let recognition;
 
 // =========================
-// 🔊 TEXT TO SPEECH
+// 🔊 TTS
 // =========================
 function speak(text) {
   const u = new SpeechSynthesisUtterance(text);
@@ -70,7 +70,7 @@ function speak(text) {
 }
 
 // =========================
-// 🧼 TEXT FORMAT
+// 🧼 FORMAT TEXT
 // =========================
 function escapeHTML(text) {
   return text
@@ -103,11 +103,11 @@ function addMessage(role, text, target) {
     role,
     text,
     time: serverTimestamp()
-  });
+  }).catch(console.error);
 }
 
 // =========================
-// 🚀 SEND (DESKTOP)
+// 🚀 SEND MESSAGE (DESKTOP)
 // =========================
 async function sendMessage() {
   const msg = input.value.trim();
@@ -121,25 +121,31 @@ async function sendMessage() {
   typing.innerText = "VoidGPT is typing...";
   chat.appendChild(typing);
 
-  const res = await fetch(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: msg, history: messages })
-  });
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: msg, history: messages })
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  typing.remove();
-  addMessage("ai", data.reply, chat);
+    typing.remove();
+    addMessage("ai", data.reply, chat);
 
-  if (vcMode) {
-    speak(data.reply);
-    vcMode = false;
+    if (vcMode) {
+      speak(data.reply);
+      vcMode = false;
+    }
+  } catch (err) {
+    typing.remove();
+    addMessage("ai", "Error connecting to VoidGPT server.", chat);
+    console.error(err);
   }
 }
 
 // =========================
-// 📱 SEND (MOBILE)
+// 📱 SEND MESSAGE (MOBILE)
 // =========================
 async function sendMessageMobile() {
   const msg = inputMobile.value.trim();
@@ -153,42 +159,51 @@ async function sendMessageMobile() {
   typing.innerText = "VoidGPT is typing...";
   chatMobile.appendChild(typing);
 
-  const res = await fetch(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: msg, history: messages })
-  });
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: msg, history: messages })
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  typing.remove();
-  addMessage("ai", data.reply, chatMobile);
+    typing.remove();
+    addMessage("ai", data.reply, chatMobile);
 
-  if (vcMode) {
-    speak(data.reply);
-    vcMode = false;
+    if (vcMode) {
+      speak(data.reply);
+      vcMode = false;
+    }
+  } catch (err) {
+    typing.remove();
+    addMessage("ai", "Error connecting to VoidGPT server.", chatMobile);
+    console.error(err);
   }
 }
 
 // =========================
-// 📥 LOAD CHAT HISTORY
+// 📥 LOAD HISTORY
 // =========================
 async function loadChatHistory() {
-  const q = query(collection(db, "voidgptChats"), orderBy("time"));
+  try {
+    const q = query(collection(db, "voidgptChats"), orderBy("time"));
+    const snapshot = await getDocs(q);
 
-  const snapshot = await getDocs(q);
+    snapshot.forEach(doc => {
+      const data = doc.data();
 
-  snapshot.forEach(doc => {
-    const data = doc.data();
-
-    if (data.role === "user") {
-      addMessage("user", data.text, chat);
-      addMessage("user", data.text, chatMobile);
-    } else {
-      addMessage("ai", data.text, chat);
-      addMessage("ai", data.text, chatMobile);
-    }
-  });
+      if (data.role === "user") {
+        addMessage("user", data.text, chat);
+        addMessage("user", data.text, chatMobile);
+      } else {
+        addMessage("ai", data.text, chat);
+        addMessage("ai", data.text, chatMobile);
+      }
+    });
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 // =========================
@@ -223,14 +238,22 @@ setupVoice();
 // =========================
 function startHoldVC() {
   vcMode = true;
-  recognition.start();
+  recognition?.start();
 }
 
 function stopHoldVC() {
-  recognition.stop();
+  recognition?.stop();
 }
 
 // =========================
-// 🚀 START APP
+// 🚀 INIT
 // =========================
 loadChatHistory();
+
+// =========================
+// ⚠️ IMPORTANT FIX (THIS IS WHY YOUR BUTTONS FAILED)
+// =========================
+window.sendMessage = sendMessage;
+window.sendMessageMobile = sendMessageMobile;
+window.startHoldVC = startHoldVC;
+window.stopHoldVC = stopHoldVC;
