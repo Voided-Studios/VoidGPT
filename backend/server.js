@@ -97,7 +97,7 @@ app.post("/chat", async (req, res) => {
 
   } catch (err) {
     console.error(err.response?.data || err.message);
-    return res.status(500).json({ reply: "Error connecting to VoidedAPIs." });
+    return res.status(500).json({ reply: "Error connecting to VoidedAPIs. Please contact a developer if this problem keeps occuring." });
   }
 });
 
