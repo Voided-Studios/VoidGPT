@@ -17,8 +17,17 @@
 
     <div class="inputBar">
       <input id="input" placeholder="Message VoidGPT..." />
+
       <button onclick="sendMessage()">➤</button>
-      <button onmousedown="startHoldVC()" onmouseup="stopHoldVC()">🎤</button>
+
+      <button
+        onmousedown="startHoldVC()"
+        onmouseup="stopHoldVC()"
+        ontouchstart="startHoldVC()"
+        ontouchend="stopHoldVC()"
+      >
+        🎤
+      </button>
     </div>
   </div>
 </div>
@@ -29,19 +38,33 @@
 
   <div class="inputBar">
     <input id="inputMobile" placeholder="Ask VoidGPT..." />
-    <button ontouchstart="startHoldVC()" ontouchend="stopHoldVC()">🎤</button>
+
+    <button
+      ontouchstart="startHoldVC()"
+      ontouchend="stopHoldVC()"
+    >
+      🎤
+    </button>
+
     <button onclick="sendMessageMobile()">➤</button>
   </div>
 </div>
 
-<script src="script.js"></script>
+<!-- ⚠️ IMPORTANT: MUST BE MODULE (Firebase requirement) -->
+<script type="module" src="script.js"></script>
 
+<!-- 📱 DEVICE SWITCHER -->
 <script>
 function checkDevice() {
   const mobile = window.innerWidth <= 768;
-  document.getElementById("desktopApp").style.display = mobile ? "none" : "flex";
-  document.getElementById("mobileApp").style.display = mobile ? "flex" : "none";
+
+  document.getElementById("desktopApp").style.display =
+    mobile ? "none" : "flex";
+
+  document.getElementById("mobileApp").style.display =
+    mobile ? "flex" : "none";
 }
+
 window.addEventListener("load", checkDevice);
 window.addEventListener("resize", checkDevice);
 </script>
