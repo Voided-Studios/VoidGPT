@@ -1,27 +1,77 @@
+
+// =========================
+// 🌐 VOIDGPT API
+// =========================
 const API_URL = "https://voidgpt-6fcj.onrender.com/chat";
 
-/* UI */
+// =========================
+// 🔥 FIREBASE IMPORTS
+// =========================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+
+import {
+  getFirestore,
+  addDoc,
+  collection,
+  serverTimestamp,
+  query,
+  orderBy,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+// =========================
+// 🔥 FIREBASE CONFIG (YOUR DATA)
+// =========================
+const firebaseConfig = {
+  apiKey: "AIzaSyBPZETffcGFXRIWOHRTuhperRnFzXFJhXs",
+  authDomain: "voidgpt-9c3aa.firebaseapp.com",
+  projectId: "voidgpt-9c3aa",
+  storageBucket: "voidgpt-9c3aa.firebasestorage.app",
+  messagingSenderId: "877660269233",
+  appId: "1:877660269233:web:58f25f0eecb301dfd19090",
+  measurementId: "G-NVYYX4Y8EH"
+};
+
+// =========================
+// 🚀 INIT FIREBASE
+// =========================
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const db = getFirestore(app);
+
+// =========================
+// 🖥 UI ELEMENTS
+// =========================
 const chat = document.getElementById("chat");
 const input = document.getElementById("input");
 
 const chatMobile = document.getElementById("chatMobile");
 const inputMobile = document.getElementById("inputMobile");
 
-/* MEMORY */
+// =========================
+// 🧠 MEMORY
+// =========================
 let messages = [];
 
-/* VC */
+// =========================
+// 🎤 VOICE
+// =========================
 let vcMode = false;
 let recognition;
 
-/* 🔊 TTS */
+// =========================
+// 🔊 TEXT TO SPEECH
+// =========================
 function speak(text) {
   const u = new SpeechSynthesisUtterance(text);
   speechSynthesis.cancel();
   speechSynthesis.speak(u);
 }
 
-/* 🧼 SAFE + BOLD FORMAT */
+// =========================
+// 🧼 TEXT FORMAT
+// =========================
 function escapeHTML(text) {
   return text
     .replace(/&/g, "&amp;")
@@ -30,28 +80,35 @@ function escapeHTML(text) {
 }
 
 function formatText(text) {
-  return escapeHTML(text)
-    .replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+  return escapeHTML(text).replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
 }
 
-/* 💬 MESSAGE */
+// =========================
+// 💬 ADD MESSAGE
+// =========================
 function addMessage(role, text, target) {
   const div = document.createElement("div");
   div.className = "msg " + role;
 
-  if (role === "ai") {
-    div.innerHTML = formatText(text);
-  } else {
-    div.innerText = text;
-  }
+  div.innerHTML =
+    role === "ai" ? formatText(text) : text;
 
   target.appendChild(div);
   target.scrollTop = target.scrollHeight;
 
   messages.push({ role, content: text });
+
+  // 💾 SAVE TO FIREBASE
+  addDoc(collection(db, "voidgptChats"), {
+    role,
+    text,
+    time: serverTimestamp()
+  });
 }
 
-/* 🚀 SEND DESKTOP */
+// =========================
+// 🚀 SEND (DESKTOP)
+// =========================
 async function sendMessage() {
   const msg = input.value.trim();
   if (!msg) return;
@@ -81,7 +138,9 @@ async function sendMessage() {
   }
 }
 
-/* 🚀 SEND MOBILE */
+// =========================
+// 📱 SEND (MOBILE)
+// =========================
 async function sendMessageMobile() {
   const msg = inputMobile.value.trim();
   if (!msg) return;
@@ -111,7 +170,30 @@ async function sendMessageMobile() {
   }
 }
 
-/* 🎤 VOICE */
+// =========================
+// 📥 LOAD CHAT HISTORY
+// =========================
+async function loadChatHistory() {
+  const q = query(collection(db, "voidgptChats"), orderBy("time"));
+
+  const snapshot = await getDocs(q);
+
+  snapshot.forEach(doc => {
+    const data = doc.data();
+
+    if (data.role === "user") {
+      addMessage("user", data.text, chat);
+      addMessage("user", data.text, chatMobile);
+    } else {
+      addMessage("ai", data.text, chat);
+      addMessage("ai", data.text, chatMobile);
+    }
+  });
+}
+
+// =========================
+// 🎤 VOICE SETUP
+// =========================
 function setupVoice() {
   const SpeechRecognition =
     window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -136,7 +218,9 @@ function setupVoice() {
 
 setupVoice();
 
-/* 🎤 HOLD TO TALK */
+// =========================
+// 🎤 HOLD TO TALK
+// =========================
 function startHoldVC() {
   vcMode = true;
   recognition.start();
@@ -145,3 +229,8 @@ function startHoldVC() {
 function stopHoldVC() {
   recognition.stop();
 }
+
+// =========================
+// 🚀 START APP
+// =========================
+loadChatHistory();
