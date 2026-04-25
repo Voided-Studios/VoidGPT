@@ -175,7 +175,7 @@ app.post("/chat", async (req, res) => {
     }
 
     return res.status(status).json({
-      error: "Unknown OpenRouter error",
+      error: "Unknown VoidAPI error",
       details: data
     });
   }
